@@ -1,0 +1,15 @@
+name: Koth
+version: 0.0.1
+description: Capture and control Hilltops!
+author: bladedpenguin
+main: net.jewelofartifice.bladedpenguin.koth.Koth
+depend: [WorldGuard]
+commands:
+  koth:
+    aliases: [koth,kingofthehill]
+    description: /koth reload
+    usage: Syntax Error koth
+  hilltop:
+    aliases: [hill,kothhill]
+    description: /hilltop add
+    usage: /hilltop add
