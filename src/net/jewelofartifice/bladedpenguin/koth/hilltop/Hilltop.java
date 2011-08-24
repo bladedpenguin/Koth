@@ -13,6 +13,8 @@ public interface Hilltop {
 	//static final Koth Plugin;
 	//
 	String getName();
+	//do I needa a setname?
 	void addOccupant(Team t);
-	public void configure();
+	public void configure(); 
+
 }

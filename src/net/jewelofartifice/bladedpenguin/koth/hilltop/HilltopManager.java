@@ -1,10 +1,12 @@
 package net.jewelofartifice.bladedpenguin.koth.hilltop;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.util.config.Configuration;
 
 import net.jewelofartifice.bladedpenguin.koth.Koth;
 import net.jewelofartifice.bladedpenguin.koth.team.Team;
@@ -20,8 +22,12 @@ public class HilltopManager {
 		loadAll();
 	}
 	private void loadAll() {
-		// TODO write this shit
+		Configuration config = new Configuration(new File (plugin.getDataFolder(),"hilltop.yml"));
+		config.load();
+		//find all the Hilltops
 		
+		//find out what type each is
+		WGHilltop.load(name); //load it
 	}
 	public void addOccupant(Location location, Team team) {
 		//first try worldguard regions....
