@@ -6,6 +6,7 @@ import org.bukkit.event.server.ServerListener;
 import org.bukkit.plugin.Plugin;
 
 import com.iConomy.iConomy;
+import com.massivecraft.factions.Factions;
 
 public class KothServerListener extends ServerListener{
 	Koth plugin;
@@ -33,6 +34,9 @@ public class KothServerListener extends ServerListener{
                     System.out.println("KOTH hooked into iConomy.");
                 }
             }
+        }
+        if (event.getPlugin() instanceof Factions){
+        	plugin.tm.loadFactions();
         }
     }
 }

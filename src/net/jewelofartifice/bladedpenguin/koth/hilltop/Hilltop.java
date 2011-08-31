@@ -5,6 +5,8 @@ import net.jewelofartifice.bladedpenguin.koth.team.Team;
 import org.bukkit.entity.Player;
 
 public interface Hilltop {
+	//unless otherwise mentioned, commented methods are intended to be part of the nterface, but can't be because of limitations of java.
+	
 	boolean isOccupiedBy(Player occupant);
 	void tick();
 	void save();

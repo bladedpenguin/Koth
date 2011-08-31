@@ -1,6 +1,8 @@
 package net.jewelofartifice.bladedpenguin.koth.team;
 
 import java.util.HashMap;
+
+//not to self: think about Map Team 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -14,10 +16,9 @@ import com.massivecraft.factions.Factions;
 
 public class TeamManager {
 	
-	private int lastID = 0;
 	private Koth plugin;
 	//private Factions factions; 
-	private Map<Integer,Team> Teams = new HashMap <Integer,Team>();
+	private Map<String,Team> Teams = new HashMap <String,Team>();
 	public TeamManager(Koth p){
 		plugin = p;
 		FTeam.tm = this;
@@ -50,12 +51,18 @@ public class TeamManager {
 			}
 		}
 	}
-	public Team getTeam(int ID){
-		return Teams.get(ID);
+	public Team getTeam(String string){
+		//determine what kind of team
+		//call the static get() for the particular type
+		return Teams.get(string);
 	}
 	public void addTeam(Team t){
-		lastID++;
-		Teams.put(lastID, t);
+		String name = t.getName();
+		
+		while (Teams.containsKey(name)){
+			name = name + '0';
+		}
+		Teams.put(t.getName(), t);
 	}
 }
 

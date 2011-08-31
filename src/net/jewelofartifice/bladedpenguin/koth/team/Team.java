@@ -8,6 +8,7 @@ public interface Team {
 	int getID();
 	void pay(double amount);
 	public String getName();
+	//public static get(String name);
 	void MTick		(String message);
 	void MCapturing	(String message);
 	void MCapture	(String message);

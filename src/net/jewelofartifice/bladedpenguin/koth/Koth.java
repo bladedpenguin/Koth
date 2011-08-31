@@ -47,12 +47,12 @@ public class Koth extends JavaPlugin{
 	@Override
 	public void onEnable() {
 		
-		//configuration
-		reloadConfig();
+
 		
 		//get the managers
 		PluginManager pm = getServer().getPluginManager();
 		hm = new HilltopManager(this);
+		hm.loadAll();
 		tm = new TeamManager(this);
 		em = new EconomyManager(this);
 		mh = new MessageHandler(this);
@@ -65,6 +65,9 @@ public class Koth extends JavaPlugin{
 		
 		logger().setLevel(Level.FINEST);
 		logger().info("Koth Enabled");
+		
+		//configuration
+		reloadConfig();
 	}
 
 	@Override
@@ -133,6 +136,7 @@ public class Koth extends JavaPlugin{
     	Configuration config = getConfiguration();
 		config.load();
 		tickInterval = config.getInt("tickInterval", 10000);
+		hm.loadAll();
 		// I need to read the Permissions source to see how they load an arbitrary  number of groups
 		//also need to look up you yaml does HashSet<whatever> and for that matter, arbitrary objects.
 		/*ArrayList <HashMap> hilltops = (ArrayList) config.getProperty("hilltops");

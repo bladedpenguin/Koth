@@ -53,6 +53,7 @@ public class WGHilltop implements Hilltop{
 	    }
 	    initialized = true;
 	}
+	
 	public static enum type {
 		WORLDGUARD
 		
@@ -90,7 +91,7 @@ public class WGHilltop implements Hilltop{
 			throw new HilltopCreationFailException();
 		}
 		Koth.logger().warning("Koth: About to try serializing Hilltops");
-		save();
+		configure();
 		//try to get faction owner obviously this needs to be updates to Team.load(String prefix)
 		/*int faction = 0;
 		Configuration config = plugin.getConfiguration();
@@ -162,19 +163,28 @@ public class WGHilltop implements Hilltop{
 		Configuration config = new Configuration(hilltopFile);
 		config.load();
 		
-		
+		//THis doesn't read: only writes if it hasn't yet been written. //maybe later I fixes that. 
 		config.getInt(getName() + ".type", HilltopManager.WORLDGUARD);
 		config.getString(getName() + ".world", world.getName());
 		config.getString(getName() + ".region", region.getId());
 		
-		payInterval = config.getInt(getName() + ".owner", 30000);
+		//actual readable options.
+		payInterval = config.getInt(getName() + ".payInterval", 30000);
 		decayRate = config.getDouble(getName() + ".expireRate", 0.01);
 		squatRate = config.getDouble(getName() + ".squatRate", 0.1);
 		payout = config.getDouble(getName() + ".payout" , 1.0);
+		
+		plugin.hm.saveList();
+		//if (owner != null || (config.getString(config.getString(getName() + ".owner",null)) != null)){ 
+		//	owner = plugin.tm.getTeam(config.getString(getName() + ".owner", owner.getName()));
+		//}
 		config.save();
 		
+		//need to get owners?
+		//for owner in owners
+		//owners.put(owner.getName(),config.getDouble(getName() + ".owners." + owner.getName(), 0.0))
 		
-		Koth.logger().info("Load took " + (new Date().getTime() - start.getTime()) + "ms");
+		Koth.logger().info("Configure() took " + (new Date().getTime() - start.getTime()) + "ms");
 	}
 	
 	public void capture(Team t){
