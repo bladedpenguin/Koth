@@ -1,9 +1,6 @@
 package net.jewelofartifice.bladedpenguin.koth;
 
 
-
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Timer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,16 +17,20 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Event.Priority;
 
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 
 
 
+
 public class Koth extends JavaPlugin{
-	public static Set<Hilltop> Hilltops = new HashSet<Hilltop>(); //this is accessed almost soley by 
+	//public static Set<Hilltop> Hilltops = new HashSet<Hilltop>(); //this is accessed almost soley by 
 	
 	private long tickInterval = 10000;//milliseconds.
+	boolean useOP = false; 
 	//private long saveInterval = 3600000;//by default, it saves every hour and Whenever Hilltops and teams are added
 	
 	private KothServerListener serverListener = new KothServerListener(this);
@@ -38,6 +39,7 @@ public class Koth extends JavaPlugin{
 	Timer timer = new Timer();
 	public EconomyManager em;
 	public MessageHandler mh;
+	public static Permission admin = new Permission("koth.admin", PermissionDefault.OP);
 
 	@Override
 	public void onDisable() {
@@ -59,7 +61,6 @@ public class Koth extends JavaPlugin{
 		pm.registerEvent(Event.Type.PLUGIN_ENABLE, serverListener, Priority.Normal, this);
 		pm.registerEvent(Event.Type.PLUGIN_DISABLE, serverListener, Priority.Normal, this);
 		timer.schedule(new KothTicker(this), 10000, tickInterval);
-		tm.loadFactions();
 		
 		tm.load();
 		
@@ -85,7 +86,18 @@ public class Koth extends JavaPlugin{
 				sender.sendMessage("Reloaded Koth");
 				logger().info("Reloaded Koth");
 				return true;
-			} else if (args[0].compareToIgnoreCase("teams") == 0) {
+			} else if (args[0].compareToIgnoreCase("notifyAdmin") == 0 && args.length > 1) {
+				if (args[1].compareToIgnoreCase("true") == 0 || args[1].compareToIgnoreCase("1") == 0 || args[1].compareToIgnoreCase("yes") == 0){
+					NotifyConfig.get(sender).notifyAdmin = true;
+				} else if (args[1].compareToIgnoreCase("false") == 0 || args[1].compareToIgnoreCase("0") == 0 || args[1].compareToIgnoreCase("no") == 0){
+					NotifyConfig.get(sender).notifyAdmin = false;
+				} else {
+					//go fuck yourself
+					return true;
+				}
+			}else if (args[0].compareToIgnoreCase("notify") == 0) {
+				sender.sendMessage("Per Hilltop nitifications not yet implemented");
+			}else if (args[0].compareToIgnoreCase("teams") == 0) {
 				for (Team t : tm.getTeams()){
 					sender.sendMessage("Team: " + t.getName() + "" );
 				}
@@ -103,7 +115,14 @@ public class Koth extends JavaPlugin{
 
 		} else if (((cmd.getName().compareToIgnoreCase("hilltop")) == 0) 
 				|| ((cmd.getName().compareToIgnoreCase("hill")) == 0)) {
-			if (args[0].compareToIgnoreCase("add") == 0) {
+			
+			if (sender instanceof Player && !sender.hasPermission("koth.admin"))
+				return true;
+			if (args[0].compareToIgnoreCase("list") == 0) {
+				for (Hilltop h : hm.Hilltops){
+					sender.sendMessage("Hilltop: " + h.getName());
+				}
+			} else if (args[0].compareToIgnoreCase("add") == 0) {
 				if (args.length <= 1){
 					sender.sendMessage("/koth add <region>");
 					return true;
@@ -113,7 +132,7 @@ public class Koth extends JavaPlugin{
 				}else if (sender instanceof Player){
 					hm.addHilltop(args[1],((Player) sender).getWorld());
 				} else {
-					sender.sendMessage("Sorry, hilltop addition relies on player for now");
+					sender.sendMessage("YOu gotta say which world");
 				}
 				return true;
 			}else if (0 == args[0].compareToIgnoreCase("list")){
@@ -136,6 +155,7 @@ public class Koth extends JavaPlugin{
     	Configuration config = getConfiguration();
 		config.load();
 		tickInterval = config.getInt("tickInterval", 10000);
+		useOP = config.getBoolean("useOP", false);
 		hm.loadAll();
 		// I need to read the Permissions source to see how they load an arbitrary  number of groups
 		//also need to look up you yaml does HashSet<whatever> and for that matter, arbitrary objects.
@@ -155,7 +175,7 @@ public class Koth extends JavaPlugin{
 		}*/
 		
 		config.save();
-		PlayerConfig.setPlugin(this);
+		NotifyConfig.setPlugin(this);
 		
     }
 }

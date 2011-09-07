@@ -5,7 +5,7 @@ import java.util.Set;
 import org.bukkit.entity.Player;
 
 public interface Team {
-	int getID();
+	//String getID();
 	void pay(double amount);
 	public String getName();
 	//public static get(String name);
@@ -18,4 +18,8 @@ public interface Team {
 	void MPay		(String message);
 	Set<Player> getOnlinePlayers();
 	void MOwnDecay(String string);
+	@Override
+	public boolean equals(Object o);
+	@Override
+	public int hashCode();
 }

@@ -12,12 +12,12 @@ public class MessageHandler {
 		//Configuration config = plugin.getConfiguration();
 		
 	}
-	PlayerConfig.messageReason type  = PlayerConfig.messageReason.OWNERSHIP_CHANGE;
+	NotifyConfig.messageReason type  = NotifyConfig.messageReason.OWNERSHIP_CHANGE;
 	public void Tick(FTeam t, String message){
 		//format?
 		for (Player p : t.getOnlinePlayers()){
 			//individual format?
-			if (PlayerConfig.get(p).notifyTick)
+			if (NotifyConfig.get(p).notifyTick)
 				p.sendMessage(message);
 		}
 		
@@ -26,19 +26,19 @@ public class MessageHandler {
 		//format?
 		for (Player p : t.getOnlinePlayers()){
 			//individual format?
-			if (PlayerConfig.get(p).notifyTick)
+			if (NotifyConfig.get(p).notifyTick)
 				p.sendMessage(message);
 		}
 		
 	}
 	public void Pay(String message, Team t) {
 		for (Player p : t.getOnlinePlayers()){
-			if (PlayerConfig.get(p).notifyPay) p.sendMessage(message);
+			if (NotifyConfig.get(p).notifyPay) p.sendMessage(message);
 		}
 	}
 	public void Capture(String message, Team t) {
 		for (Player p : t.getOnlinePlayers()){
-			if (PlayerConfig.get(p).notifyCapture) p.sendMessage(message);	
+			if (NotifyConfig.get(p).notifyCapture) p.sendMessage(message);	
 		}
 	}
 }

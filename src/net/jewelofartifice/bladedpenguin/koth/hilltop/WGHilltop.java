@@ -8,11 +8,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import net.jewelofartifice.bladedpenguin.koth.Koth;
+import net.jewelofartifice.bladedpenguin.koth.NotifyConfig;
 import net.jewelofartifice.bladedpenguin.koth.team.Team;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -144,7 +146,7 @@ public class WGHilltop implements Hilltop{
 		World w = plugin.getServer().getWorld(config.getString(name + ".world", ""));
 		if (w instanceof World && w != null){
 			try {
-				new WGHilltop(name,w);
+				new WGHilltop(config.getString(name + ".region", name),w);
 			} catch (HilltopCreationFailException e) {
 				Koth.logger().warning("Koth: Region not found.");
 				e.printStackTrace();
@@ -188,12 +190,13 @@ public class WGHilltop implements Hilltop{
 	}
 	
 	public void capture(Team t){
-		Configuration config = plugin.getConfiguration();
+		Configuration config = new Configuration(new File(plugin.getDataFolder(),"hilltops.yml"));
 		Date now = new Date();
 		owner = t;
 		payday = new Date(now.getTime() + payInterval);
 		t.MCapture("You have captured " + getName());
-		config.setProperty("hilltops." + getName() + ".owner", owner.getID()); //at some point this needs to be moved into Team.save(String prefix) 
+		config.setProperty(getName() + ".owner", owner.getName()); //at some point this needs to be moved into Team.save(String prefix)
+		config.save();
 	}
 	
 	public void expire(){
@@ -203,7 +206,7 @@ public class WGHilltop implements Hilltop{
 		//notify and log
 		Koth.logger().finer("Koth tick " + getName() );
 		for (Entry<Team, Integer> e : occupants.entrySet()){
-			Koth.logger().info("Koth: " + e.getValue() + " of " + e.getKey().getName() + " are in " + getName());
+			Koth.logger().fine("Koth: " + e.getValue() + " of " + e.getKey().getName() + " are in " + getName());
 			e.getKey().MOccupancy("Koth: " + e.getValue() + " of " + e.getKey().getName() + " are in " + getName());
 		} 
 		
@@ -224,7 +227,7 @@ public class WGHilltop implements Hilltop{
 			Koth.logger().fine("t.getName od: " + od);
 			ownershipIncrease += od; //document the ownership differential, to keep total ownership at 1.000
 			t.MCapture(t.getName() +  " has captured " + (owners.get(t)*100) + "% of " + getName());
-			Koth.logger().info(t.getName() +  " has captured " + (owners.get(t)*100) + "% of " + getName());
+			if (NotifyConfig.get(new ConsoleCommandSender(plugin.getServer())).notifyAdmin){Koth.logger().info(t.getName() +  " has captured " + (owners.get(t)*100) + "% of " + getName());}
 			if (owners.get(t)> 0.5 && owner != t){
 				capture(t);		//if someone has 51%, give them ownership, unless they already have it.
 			}

@@ -27,7 +27,7 @@ public class FTeam implements Team{
 		faction = f;
 		name = f.getTag();
 		fteams.put(faction, this);
-		plugin.tm.addTeam(this);
+		tm.addTeam(this);
 		return;
 	}
 	public void pay(double amount){
@@ -47,6 +47,17 @@ public class FTeam implements Team{
 	}
 	
 	//functions with prefix M are messaging convenience functions.
+	public boolean equals(Object o){
+		if (o instanceof FTeam){
+			if (((FTeam) o).getID() ==  this.getID()){
+				return true;
+			}
+		} return false;
+	}
+	public int hashCode(){
+		return 1000+getID();
+	}
+
 	public void MTick(String message) {
 		//convenience function
 		//should call the relevant messagehandler function.
@@ -54,10 +65,8 @@ public class FTeam implements Team{
 		
 	}
 
-	@Override
 	public int getID() {
-		// TODO Auto-generated method stub
-		return 0;
+		return faction.getId();
 	}
 
 	@Override

@@ -6,7 +6,8 @@
 	<classpathentry kind="lib" path="C:/Users/Tim/workspace/lib/WorldGuard-5.2.2.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Tim/workspace/lib/Factions.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Tim/workspace/lib/iConomy.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Tim/workspace/lib/bukkit-0.0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Tim/workspace/lib/snakeyaml-1.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Tim/workspace/lib/Permissions-3.1.6.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Tim/workspace/lib/bukkit-0.0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
