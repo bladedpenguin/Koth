@@ -3,7 +3,8 @@ version: 0.0.1
 description: Capture and control Hilltops!
 author: bladedpenguin
 main: net.jewelofartifice.bladedpenguin.koth.Koth
-depend: [WorldGuard]
+depend: [WorldGuard, Vault]
+softdepend: [Factions]
 commands:
   koth:
     aliases: [koth,kingofthehill]

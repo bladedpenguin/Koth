@@ -21,7 +21,8 @@ public class TeamManager {
 	private Map<String,Team> Teams = new HashMap <String,Team>();
 	public TeamManager(Koth p){
 		plugin = p;
-		FTeam.tm = this;
+		
+		FTeam.initialize(p, this);
 		
 		Plugin pl = plugin.getServer().getPluginManager().getPlugin("Factions");
 		if ((pl != null) && (pl instanceof Factions)){
@@ -44,7 +45,11 @@ public class TeamManager {
 	}
 	
 	public void loadFactions() {
-		for (Faction f : Faction.getAll()){
+		if (!plugin.getServer().getPluginManager().isPluginEnabled("Factions")){
+			Koth.logger().severe("Koth: Factions not enabled....");
+			return;
+		}
+		for (Faction f : Factions.i.get()){
 			if (f.isNormal()){
 				new FTeam(plugin,f);
 				Koth.logger().info("Koth: Faction " + f.getTag() + " Loaded" );

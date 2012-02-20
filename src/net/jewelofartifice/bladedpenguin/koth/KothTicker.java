@@ -17,7 +17,7 @@ public class KothTicker extends TimerTask {
 		Koth.logger().finer("Kothtick");
 		//change this to for players on a team
 		for (Team t : plugin.tm.getTeams()){ //NOTE: if a player is tricky enough to be on multiple teams, they will be counted more than once. Double agents FTW!
-			t.MTick(t.getName() + " Tick!");
+			plugin.mh.send(t, Messager.reason.TICK, t.getName() + " Tick!");
 			for (Player p : t.getOnlinePlayers()){ //see who is sitting where, and add the to the relevant hilltop for later processing
 				plugin.hm.addOccupant(p.getLocation(),t);
 			}

@@ -1,24 +1,23 @@
 package net.jewelofartifice.bladedpenguin.koth.hilltop;
 
 import static com.sk89q.worldguard.bukkit.BukkitUtil.toVector;
-
-import java.io.File;
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import net.jewelofartifice.bladedpenguin.koth.Koth;
-import net.jewelofartifice.bladedpenguin.koth.NotifyConfig;
+import net.jewelofartifice.bladedpenguin.koth.Messager;
 import net.jewelofartifice.bladedpenguin.koth.team.Team;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
-import org.bukkit.util.config.Configuration;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
@@ -26,6 +25,7 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 public class WGHilltop implements Hilltop{
 	Team owner = null;
 	String name="defaulthilltop";
+	String permissionsgroup;
 	ProtectedRegion region;
 	Date expires = new Date();
 	Date payday  = new Date();
@@ -33,6 +33,7 @@ public class WGHilltop implements Hilltop{
 	double decayRate = 0.01;
 	double squatRate = 0.1; //rate at which ownership is taken. This is heavily affected by Koth.tickInterval
 	double payout = 1.0;
+	String permissionsGroup = ""; 
 	World world = null;
 	public Map<Team , Integer > occupants = new HashMap<Team , Integer >(); //how many of each team we have here
 	public Map<Team, Float> owners = new HashMap<Team, Float>();
@@ -40,14 +41,14 @@ public class WGHilltop implements Hilltop{
 	public static Koth plugin;
 	public static WorldGuardPlugin worldGuard;
 	static Map <ProtectedRegion,Hilltop> regions = new HashMap<ProtectedRegion,Hilltop>();
-	public static void initialize(Koth p){
+	public static void initialize(Koth p){ //  DOn't load stuff. THat is done separately. init jsut gets all the tools we need.
 		if (initialized) return;
 		plugin = p;
 		PluginManager pm = plugin.getServer().getPluginManager();
 		Plugin pl;
 		pl = pm.getPlugin("WorldGuard");
 	    if (pl == null || !(pl instanceof WorldGuardPlugin)) {
-	        Koth.logger().severe("Koth was unable to integrate with ");
+	        Koth.logger().severe("Koth was unable to integrate with worldguard and no other hilltop types are installed. disabling...");
 	        plugin.getServer().getPluginManager().disablePlugin(plugin);
 	    } else {
 	    	worldGuard = (WorldGuardPlugin) pl;
@@ -71,10 +72,10 @@ public class WGHilltop implements Hilltop{
 		}
 	}
 	
-	WGHilltop(String n, World w) throws HilltopCreationFailException{ //when I use something besides worldguard, there will be more constructors.
-		//region = r;				// it takes a Player because eventually region notfound will create a radiused location centered hilltop.
+	WGHilltop(String n, World w) throws HilltopCreationFailException{ 
+		//region = r;				
 		if (!initialized){
-			Koth.logger().severe("Koth: Tried to add WGHilltop without initialization!");
+			Koth.logger().warning("Koth: Tried to add WGHilltop without initialization!");
 			Plugin p = Bukkit.getServer().getPluginManager().getPlugin("Koth");
 			initialize((Koth) p);
 			
@@ -87,7 +88,7 @@ public class WGHilltop implements Hilltop{
 		if (r != null){
 			this.region = r;
 			regions.put(r, this);
-			plugin.hm.addHilltop(this);
+			plugin.hm.addHilltop(this);		//Hilltop added TODO
 			Koth.logger().info("Region added: " + r.getId());
 		} else {
 			throw new HilltopCreationFailException();
@@ -113,14 +114,16 @@ public class WGHilltop implements Hilltop{
 	}
 	
 	public void save(){ // I need thread safety here. I know it. I need to lock up the config before I open it
-		File hilltopFile =  new File(plugin.getDataFolder(),"hilltops.yml");
-		Configuration config = new Configuration(hilltopFile);
-		config.load();
-		config.setProperty(getName() + ".type", HilltopManager.WORLDGUARD);
-		config.setProperty(getName() + ".world", world.getName());
-		config.setProperty(getName() + ".region", region.getId());
-		
-		config.save();
+		//File hilltopFile =  new File(plugin.getDataFolder(),"hilltops.yml");
+		//Configuration config = new Configuration(hilltopFile);
+		//config.load();
+		plugin.reloadConfig();
+		ConfigurationSection config = plugin.getConfig().getConfigurationSection("Hilltops." + getName());
+		config.set("type", HilltopManager.WORLDGUARD);
+		config.set("world", world.getName());
+		config.set("region", region.getId());
+		config.set("permissionGroup", permissionsGroup);
+		plugin.saveConfig();		
 		
 		/*HashMap newHill = new HashMap();
 		newHill.put("type", type.WORLDGUARD);
@@ -133,20 +136,22 @@ public class WGHilltop implements Hilltop{
 	}
 	
 	//Only called for regions that exist in the config file.
-	public static void load(String name){ 	//only called for prexisting regions
+	public static void load(String name){ 	
 		Koth.logger().info("Loading Hilltop: " + name);
 		Date start = new Date();
-		File hilltopFile =  new File(plugin.getDataFolder(),"hilltops.yml");
-		Configuration config = new Configuration(hilltopFile);
-		config.load();
-		if (config.getInt(name + ".type", HilltopManager.NONE) != HilltopManager.WORLDGUARD){
+		//File hilltopFile =  new File(plugin.getDataFolder(),"hilltops.yml");
+		//Configuration config = new Configuration(hilltopFile);
+		plugin.reloadConfig();
+		ConfigurationSection config = plugin.getConfig().getConfigurationSection("Hilltops." + name);
+		
+		if (config.getInt("type", HilltopManager.NONE) != HilltopManager.WORLDGUARD){
 			Koth.logger().warning("Attempted to load non WG Hilltop " + name + " as a WGHilltop. Fail.");
 			return;
 		}
-		World w = plugin.getServer().getWorld(config.getString(name + ".world", ""));
+		World w = plugin.getServer().getWorld(config.getString("world", ""));
 		if (w instanceof World && w != null){
 			try {
-				new WGHilltop(config.getString(name + ".region", name),w);
+				new WGHilltop(config.getString("region", name),w);
 			} catch (HilltopCreationFailException e) {
 				Koth.logger().warning("Koth: Region not found.");
 				e.printStackTrace();
@@ -161,26 +166,28 @@ public class WGHilltop implements Hilltop{
 	//called in the constructor to get
 	public void configure(){ 
 		Date start = new Date();
-		File hilltopFile =  new File(plugin.getDataFolder(),"hilltops.yml");
-		Configuration config = new Configuration(hilltopFile);
-		config.load();
+		//File hilltopFile =  new File(plugin.getDataFolder(),"hilltops.yml");
+		//Configuration config = new Configuration(hilltopFile);
+		//config.load();
+		plugin.reloadConfig();
+		ConfigurationSection config = plugin.getConfig().getConfigurationSection("Hilltops." + getName());
 		
 		//THis doesn't read: only writes if it hasn't yet been written. //maybe later I fixes that. 
-		config.getInt(getName() + ".type", HilltopManager.WORLDGUARD);
-		config.getString(getName() + ".world", world.getName());
-		config.getString(getName() + ".region", region.getId());
+		config.getInt("type", HilltopManager.WORLDGUARD);
+		config.getString("world", world.getName());
+		config.getString("region", region.getId());
 		
 		//actual readable options.
-		payInterval = config.getInt(getName() + ".payInterval", 30000);
-		decayRate = config.getDouble(getName() + ".expireRate", 0.01);
-		squatRate = config.getDouble(getName() + ".squatRate", 0.1);
-		payout = config.getDouble(getName() + ".payout" , 1.0);
+		payInterval = config.getInt("payInterval", 30000);
+		decayRate = config.getDouble("expireRate", 0.01);
+		squatRate = config.getDouble("squatRate", 0.1);
+		payout = config.getDouble("payout" , 1.0);
 		
 		plugin.hm.saveList();
 		//if (owner != null || (config.getString(config.getString(getName() + ".owner",null)) != null)){ 
 		//	owner = plugin.tm.getTeam(config.getString(getName() + ".owner", owner.getName()));
 		//}
-		config.save();
+		plugin.saveConfig();
 		
 		//need to get owners?
 		//for owner in owners
@@ -190,13 +197,36 @@ public class WGHilltop implements Hilltop{
 	}
 	
 	public void capture(Team t){
-		Configuration config = new Configuration(new File(plugin.getDataFolder(),"hilltops.yml"));
+		//Configuration config = new Configuration(new File(plugin.getDataFolder(),"hilltops.yml"));
+		//config.load();
 		Date now = new Date();
-		owner = t;
+		
+		plugin.reloadConfig();
+		ConfigurationSection config = plugin.getConfig().getConfigurationSection("Hilltops." + getName());
+		
 		payday = new Date(now.getTime() + payInterval);
-		t.MCapture("You have captured " + getName());
-		config.setProperty(getName() + ".owner", owner.getName()); //at some point this needs to be moved into Team.save(String prefix)
-		config.save();
+		for (Team team : plugin.tm.getTeams()){
+			if (team == t){
+				plugin.mh.send(this, Messager.reason.CAPTURE, team, "Your team has captured " + getName());
+				team.addGroup(permissionsgroup);
+			}
+			else if (team == owner){
+				plugin.mh.send(this, Messager.reason.LOSS, team,"Your team has lost " + getName());
+				team.removeGroup(permissionsgroup);
+			
+			}
+			else if (owner != null)
+				plugin.mh.send(this, Messager.reason.OWNERSHIP_CHANGE, team, "Ownership of " +  getName() +" has passed from " + owner.getName() + " to " + t.getName());
+			else
+				plugin.mh.send(this, Messager.reason.OWNERSHIP_CHANGE, team, "Ownership of " +  getName() +" has passed to " + t.getName());
+		}
+		if (owner != null)
+			plugin.mh.send(Messager.reason.ADMIN, "Ownership of " +  getName() +" has passed from " + owner.getName() + " to " + t.getName());
+		else
+			plugin.mh.send(Messager.reason.ADMIN, "Ownership of " +  getName() +" has passed from to " + t.getName());
+		owner = t; //make sure to set new owner AFTER messaging
+		config.set(getName() + ".owner", owner.getName()); //at some point this needs to be moved into Team.save(String prefix)
+		plugin.saveConfig();
 	}
 	
 	public void expire(){
@@ -205,10 +235,10 @@ public class WGHilltop implements Hilltop{
 	public void tick() {
 		//notify and log
 		Koth.logger().finer("Koth tick " + getName() );
-		for (Entry<Team, Integer> e : occupants.entrySet()){
-			Koth.logger().fine("Koth: " + e.getValue() + " of " + e.getKey().getName() + " are in " + getName());
-			e.getKey().MOccupancy("Koth: " + e.getValue() + " of " + e.getKey().getName() + " are in " + getName());
-		} 
+//		for (Entry<Team, Integer> e : occupants.entrySet()){
+//			Koth.logger().fine("Koth: " + e.getValue() + " of " + e.getKey().getName() + " are in " + getName());
+//			plugin.mh.send(e.getKey(),Messager.reason.OCCUPANCY, "Koth: " + e.getValue() + " of " + e.getKey().getName() + " are in " + getName());
+//		} 
 		
 		//detect and assign ownership
 		
@@ -226,8 +256,8 @@ public class WGHilltop implements Hilltop{
 			owners.put(t,(float) (owners.get(t) + od)); //add the ownership differential
 			Koth.logger().fine("t.getName od: " + od);
 			ownershipIncrease += od; //document the ownership differential, to keep total ownership at 1.000
-			t.MCapture(t.getName() +  " has captured " + (owners.get(t)*100) + "% of " + getName());
-			if (NotifyConfig.get(new ConsoleCommandSender(plugin.getServer())).notifyAdmin){Koth.logger().info(t.getName() +  " has captured " + (owners.get(t)*100) + "% of " + getName());}
+			plugin.mh.send(t, Messager.reason.CAPTURING,t.getName() +  " has captured " + new DecimalFormat("##").format(owners.get(t)*100) + "% of " + getName());
+			plugin.mh.send(Messager.reason.ADMIN, t.getName() +  " has captured " + new DecimalFormat("##").format(owners.get(t)*100) + "% of " + getName());
 			if (owners.get(t)> 0.5 && owner != t){
 				capture(t);		//if someone has 51%, give them ownership, unless they already have it.
 			}
@@ -238,12 +268,13 @@ public class WGHilltop implements Hilltop{
 		for(Team t : owners.keySet()){
 			if (!occupants.containsKey(t)){
 				owners.put(t,(float) (owners.get(t) - owners.get(t)*ownershipIncrease) );
+				//plugin.mh.send(t, Messager.reason.LOSING, "You have " + owners.get(t) + " pwnership of " + getName());
 			}
 			//Take ownership anyway  (because we hate you)
 			owners.put(t, (float) (owners.get(t) * (1 - decayRate)));
-			Koth.logger().info(t.getName() + " : " + owners.get(t));
+			plugin.mh.send(Messager.reason.ADMIN, t.getName() + " : " + owners.get(t));
 			total += owners.get(t);
-			t.MOwnDecay("You have " + owners.get(t) + " pwnership of " + getName());
+			plugin.mh.send(t, Messager.reason.TICK, "You have " + owners.get(t) + " pwnership of " + getName());
 		}
 		if ( owner != null && owners.get(owner) < 0.5){
 			expire();
@@ -251,15 +282,15 @@ public class WGHilltop implements Hilltop{
 
 		
 		
-		Koth.logger().info("Total: " + total);
+		Koth.logger().fine(getName() + " Total: " + total);
 		
 		//pay if appropriate
 		Date now = new Date ();
 		if (owner != null && now.getTime() >= payday.getTime()){
 			owner.pay(payout);
-			owner.MPay("You've been paid " + payout + " for ownership of " + getName());
+			plugin.mh.send(owner,Messager.reason.PAY, "You've been paid " + payout + " for ownership of " + getName());
 			payday.setTime(payday.getTime()+payInterval); //pretty sure getTime is long miliseconds. otherwise I'm in trouble.
-			Koth.logger().info("paid: " + (int) now.getTime()/1000 + " and payday is: " + (int) payday.getTime()/1000);
+			Koth.logger().finer("paid: " + (int) now.getTime()/1000 + " and payday is: " + (int) payday.getTime()/1000);
 		}
 		clearOccupants();
 	}
@@ -282,9 +313,44 @@ public class WGHilltop implements Hilltop{
 
 	@Override
 	public boolean isOccupiedBy(Player occupant) {
-		// TODO Auto-generated method stub
-		return false;
+		RegionManager rm = worldGuard.getRegionManager(occupant.getLocation().getWorld());
+		for (ProtectedRegion r : rm.getApplicableRegions(toVector(occupant.getLocation()))) {
+			if (r == region)
+				return true;
+		}
+	return false;
 	}
+
+	@Override
+	public Team getOwner() {
+		return owner;
+	}
+
+	@Override
+	public String printReport() {
+		String s = "";
+		s += getName() + "/n WG region: " + region.getId() +
+				"/n Pays " + payout + " every " + payInterval + " seconds" + 
+				"Owned by: " + getOwner().getName(); 
+				
+		return s;
+	}
+
+	@Override
+	public String printOwners() {
+		String s = "";
+		s += getName()+ "/n";
+		for (Entry<Team, Float>  e : owners.entrySet()){
+			s += e.getKey().getName() + ": " + new DecimalFormat("##").format(e.getValue()) + "% /n";
+		}
+		return s;
+	}
+
+	@Override
+	public String getGroup() {
+		return permissionsGroup;
+	}
+	
 
 }
 

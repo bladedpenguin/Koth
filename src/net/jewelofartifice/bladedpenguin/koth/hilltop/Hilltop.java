@@ -1,5 +1,6 @@
 package net.jewelofartifice.bladedpenguin.koth.hilltop;
 
+import java.util.ArrayList;
 import net.jewelofartifice.bladedpenguin.koth.team.Team;
 
 import org.bukkit.entity.Player;
@@ -17,6 +18,10 @@ public interface Hilltop {
 	String getName();
 	//do I needa a setname?
 	void addOccupant(Team t);
-	public void configure(); 
-
+	public void configure();
+	Team getOwner();
+	String printReport(); 
+	String printOwners();
+	String getGroup(); //the permissions group that is added/removed on capture
+	ArrayList<String> Permissions = new ArrayList<String>();
 }

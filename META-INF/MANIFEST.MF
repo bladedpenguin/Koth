@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Koth
+Bundle-SymbolicName: Koth
+Bundle-Version: 1.0.0.qualifier
+Bundle-ClassPath: Koth.jar,
+ tim/workspace/includes/bukkit-1.0.0-R1-SNAPSHOT.jar,
+ tim/workspace/includes/Factions.jar,
+ tim/workspace/includes/Vault.jar,
+ tim/workspace/includes/WorldGuard.jar,
+ tim/workspace/includes/WorldEdit.jar
+Export-Package: net.jewelofartifice.bladedpenguin.koth,
+ net.jewelofartifice.bladedpenguin.koth.hilltop,
+ net.jewelofartifice.bladedpenguin.koth.team

@@ -1,14 +1,12 @@
 package net.jewelofartifice.bladedpenguin.koth.hilltop;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.util.config.Configuration;
-
+import org.bukkit.configuration.ConfigurationSection;
 import net.jewelofartifice.bladedpenguin.koth.Koth;
 import net.jewelofartifice.bladedpenguin.koth.team.Team;
 
@@ -25,24 +23,30 @@ public class HilltopManager {
 		
 	}
 	public void loadAll() {
-		Configuration config = new Configuration(new File (plugin.getDataFolder(),"hilltops.yml"));
-		config.load();
+		//Configuration config = new Configuration(new File (plugin.getDataFolder(),"hilltops.yml"));
+		//config.load();
+		plugin.reloadConfig();
+		 
+		//TODO figure this shit out
+		//purge the secondary induction buffer.
+		Hilltops.clear();
+		
 		Koth.logger().info("Listing elements in hilltop.yml");
 		//find all the Hilltops Hilltops, 
 		Set<String> hillnames = new HashSet<String>();
-		for (String name: config.getAll().keySet()){
-			name = name.split("\\.")[0];
+		for (String name: plugin.getConfig().getKeys(true)){
+			name = name.split("\\.")[1];
 			if (!hillnames.contains(name)){
 				hillnames.add(name);
 				//diagnostic
-				Koth.logger().info("Hillname " + name);
+				Koth.logger().info("Hill found:  " + name);
 		// diagnostic...
 		
 		
 	
 		//find out what type each is
 		
-				if (config.getInt(name + ".type", 0) == WORLDGUARD){
+				if (plugin.getConfig().getInt("Hilltops." + name + ".type", 0) == WORLDGUARD){
 					WGHilltop.load(name); //load it
 				}else/* if (config.getInt(name + ".type", 0) == CHUNK){
 					ChunkHilltop.load(name); //just an example
@@ -58,7 +62,7 @@ public class HilltopManager {
 		WGHilltop.addOccupant(location, team);
 		//.. then try any other types of regions that might exist.
 	}
-	public void addHilltop(String string, World world) {
+	public void createHilltop(String string, World world) {
 		//assume we want a new Hilltop
 		try{
 			new WGHilltop(string, world);
@@ -76,16 +80,33 @@ public class HilltopManager {
 		Hilltops.remove(h);
 	}
 	public void saveList(){
-		Configuration config = new Configuration(new File (plugin.getDataFolder(),"hilltops.yml"));
-		config.load();
+		//Configuration config = new Configuration(new File (plugin.getDataFolder(),"hilltops.yml"));
+		//config.load();
+		plugin.reloadConfig();
+		ConfigurationSection config = plugin.getConfig();
 		Koth.logger().info("Saving Hilltop List");
 		List<String> hillnames = new ArrayList<String>();
 		for (Hilltop h: Hilltops){
 			hillnames.add(h.getName());
 			Koth.logger().info("saving to hilltop list: " + h.getName());
 		}
-		config.getStringList("hilltops",hillnames );
-		config.save();
+		config.set("Hilltops",hillnames );
+		plugin.saveConfig();
+	}
+//	@Override
+//	public Set<Team> getOwners(){
+//		return Owner
+//	}
+	public Hilltop getHilltop(String name) { //maybe we need to use a map<name,hilltop>, or this function needs ot make multiple passes, at descending levels of precision
+		Koth.logger().finest("getHilltop() seeking: " + name);
+		for (Hilltop h : Hilltops){
+			Koth.logger().finest("getHilltop() Hilltop detected: " + h.getName());
+			if (h.getName().equals(name)){
+				Koth.logger().finest("getHilltop() returning " + h.getName());
+				return h;
+			}
+		}
+		return null;
 	}
 	
 }
