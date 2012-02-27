@@ -14,7 +14,7 @@ public class HilltopManager {
 	public static final int NONE = 0;
 	public static final int WORLDGUARD = 1;
 	private Koth plugin;
-	public Set<Hilltop> Hilltops =  new HashSet<Hilltop>();
+	public Set<Hilltop> Hilltops =  new HashSet<Hilltop>(); //this should be private and a map<String name, Hilltop>
 	public HilltopManager(Koth p){
 		plugin = p;
 		WGHilltop.initialize(plugin);
@@ -64,6 +64,8 @@ public class HilltopManager {
 	}
 	public void createHilltop(String string, World world) {
 		//assume we want a new Hilltop
+		//the interface between this and Cmd needs to be defined
+		//do we use overloading?
 		try{
 			new WGHilltop(string, world);
 		}catch(HilltopCreationFailException e){
@@ -107,6 +109,10 @@ public class HilltopManager {
 			}
 		}
 		return null;
+	}
+	public Set<Hilltop> getHilltops() {
+		// TODO Auto-generated method stub
+		return Hilltops;
 	}
 	
 }

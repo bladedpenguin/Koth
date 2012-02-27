@@ -21,5 +21,6 @@ public interface Team {
 	@Override
 	public int hashCode();
 	boolean contains(Player sender);
-	ArrayList<String> Permissions = new ArrayList<String>();
+	ArrayList<String> Groups = new ArrayList<String>();
+	public ArrayList<String> getGroups();
 }

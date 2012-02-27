@@ -18,12 +18,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.java.JavaPlugin;
+import com.massivecraft.mcore1.MPlugin;
 
 
-
-public class Koth extends JavaPlugin{
-	//public static Set<Hilltop> Hilltops = new HashSet<Hilltop>(); //this is accessed almost soley by 
+public class Koth extends MPlugin{
+	private static Koth k;//public static Set<Hilltop> Hilltops = new HashSet<Hilltop>(); //this is accessed almost soley by 
 	
 	private long tickInterval = 10000;//milliseconds.
 	boolean useOP = false;
@@ -43,12 +42,15 @@ public class Koth extends JavaPlugin{
 	public static Permission otherinfo = new Permission("koth.otherinfo", PermissionDefault.OP);
 	public static String defaultGroup = "default";
 	
+	Koth(){
+		Koth.k = this;
+	}
 	
 	@Override
 	public void onDisable() {
 		timer.cancel();
 	}
-
+	
 	@Override
 	public void onEnable() {
 
@@ -248,4 +250,8 @@ public class Koth extends JavaPlugin{
         }
         return (permission != null);
     }
+
+	public static Koth k() {
+		return k;
+	}
 }

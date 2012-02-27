@@ -8,5 +8,6 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="lib" path="C:/Users/Tim/workspace/lib/bukkit-1.1-R4-20120131.160550-3.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Tim/workspace/factionswithevents.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Tim/workspace/lib/mcore1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

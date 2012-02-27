@@ -28,7 +28,7 @@ public class FTeam implements Team,Listener{
 	static Koth plugin;
 	ArrayList <Player> players;
 	private Map<Faction,FTeam> fteams = new HashMap<Faction,FTeam>();
-	Set <String> groups = new HashSet<String>();
+	ArrayList <String> groups = new ArrayList<String>();
 	static void initialize(Koth p,TeamManager TM){
 		plugin = p;
 		tm = TM;
@@ -163,5 +163,10 @@ public class FTeam implements Team,Listener{
 		for (String g : groups){
 			Koth.permission.playerRemoveGroup(player,g);
 		}
+	}
+	@Override
+	public ArrayList<String> getGroups() {
+		// TODO Auto-generated method stub
+		return groups;
 	}
 }

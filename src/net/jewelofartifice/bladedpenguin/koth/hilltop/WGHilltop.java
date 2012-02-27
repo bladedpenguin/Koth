@@ -84,6 +84,9 @@ public class WGHilltop implements Hilltop{
 		//sender.sendMessage("Attempting to add region: " + n);
 		name = n;
 		world = w;
+		
+		//at some point we need to search through all worlds, prefering the given world, then the default world.
+		//default world maybe should be configurable
 		ProtectedRegion r = worldGuard.getRegionManager(w).getRegion(name);
 		if (r != null){
 			this.region = r;
